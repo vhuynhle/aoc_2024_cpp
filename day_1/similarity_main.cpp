@@ -1,4 +1,4 @@
-#include "distance.hpp"
+#include "similarity.hpp"
 
 #include <iostream>
 #include <print>
@@ -16,7 +16,7 @@ int main()
         v2.push_back(pos2);
     }
 
-    std::println("Total distance: {}", distance(v1, v2));
+    std::println("Similarity score: {}", similarity_score(v1, v2));
 
     return 0;
 }

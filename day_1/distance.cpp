@@ -2,13 +2,13 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <span>
 #include <stdexcept>
-#include <vector>
 
-std::int64_t distance(std::vector<std::int64_t>&& v1, std::vector<std::int64_t>&& v2)
+std::int64_t distance(std::span<std::int64_t> v1, std::span<std::int64_t> v2)
 {
     if (v1.size() != v2.size()) {
-        throw std::invalid_argument("distance: Two input vectors must have the same length");
+        throw std::invalid_argument("distance: Two input spans must have the same length");
     }
 
     std::sort(v1.begin(), v1.end());

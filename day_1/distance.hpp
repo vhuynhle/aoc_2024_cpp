@@ -1,4 +1,4 @@
 #include <cstdint>
-#include <vector>
+#include <span>
 
-std::int64_t distance(std::vector<std::int64_t>&& v1, std::vector<std::int64_t>&& v2);
+std::int64_t distance(std::span<std::int64_t> v1, std::span<std::int64_t> v2);

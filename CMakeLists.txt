@@ -19,3 +19,4 @@ add_compile_options(-Wall -Wextra -pedantic -Werror -Wconversion
   -Wsign-conversion)
 
 add_subdirectory(day_1)
+add_subdirectory(day_5)

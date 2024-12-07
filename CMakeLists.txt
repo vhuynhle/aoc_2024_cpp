@@ -20,3 +20,5 @@ add_compile_options(-Wall -Wextra -pedantic -Werror -Wconversion
 
 add_subdirectory(day_1)
 add_subdirectory(day_5)
+add_subdirectory(day_6)
+add_subdirectory(day_7)

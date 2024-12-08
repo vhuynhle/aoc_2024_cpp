@@ -15,9 +15,9 @@ std::optional<int64_t> prefix(std::int64_t a, std::int64_t b)
         return std::nullopt;
     }
 
+    a -= b;
     do {
-        const auto d = b % 10;
-        if ((a - d) % 10 != 0) {
+        if (a % 10 != 0) {
             return std::nullopt;
         }
         a /= 10;

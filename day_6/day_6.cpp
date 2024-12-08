@@ -1,13 +1,14 @@
 #include <algorithm>
-#include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <print>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 
-inline constexpr std::uint8_t encode_direction(char direction)
+static inline constexpr std::uint8_t encode_direction(char direction)
 {
     switch (direction) {
     case '^':
@@ -21,7 +22,7 @@ inline constexpr std::uint8_t encode_direction(char direction)
     }
 }
 
-inline constexpr char change_direction(char direction)
+static inline constexpr char change_direction(char direction)
 {
     switch (direction) {
     case '^':
@@ -35,38 +36,98 @@ inline constexpr char change_direction(char direction)
     }
 }
 
-inline std::pair<std::int64_t, std::int64_t> next(
-    std::int64_t row, std::int64_t col, char direction)
+static inline std::pair<std::int64_t, std::int64_t> next(
+    std::uint64_t row, std::uint64_t col, char direction)
 {
+    const auto srow = static_cast<int64_t>(row);
+    const auto scol = static_cast<int64_t>(col);
     switch (direction) {
     case '^':
-        return { row - 1, col };
+        return { srow - 1, scol };
     case '>':
-        return { row, col + 1 };
+        return { srow, scol + 1 };
     case 'v':
-        return { row + 1, col };
+        return { srow + 1, scol };
     default:
-        return { row, col - 1 };
+        return { srow, scol - 1 };
     }
 }
 
-bool been_there(const std::vector<std::vector<std::uint8_t>>& records, std::int64_t row,
-    std::int64_t col, char direction)
+static inline bool been_there(const std::vector<std::vector<std::uint8_t>>& records,
+    std::uint64_t row, std::uint64_t col, char direction)
 {
     const auto ed = encode_direction(direction);
-    return records[static_cast<std::size_t>(row)][static_cast<std::size_t>(col)] & ed;
+    return records[row][col] & ed;
 }
 
-bool has_obtacle(const std::vector<std::string>& map, std::int64_t row, std::int64_t col)
+static inline bool has_obtacle(
+    const std::vector<std::string>& map, std::uint64_t row, std::uint64_t col)
 {
-    return (row >= 0) && (static_cast<std::size_t>(row) < map.size()) && (col >= 0)
-        && (static_cast<std::size_t>(col) < map[0].size())
-        && (map[static_cast<std::size_t>(row)][static_cast<std::size_t>(col)] == '#');
+    return map[row][col] == '#';
 }
 
-bool out_of_bound(std::int64_t nrows, std::int64_t ncols, std::int64_t row, std::int64_t col)
+static inline bool out_of_bound(
+    std::uint64_t nrows, std::uint64_t ncols, std::int64_t row, std::int64_t col)
 {
-    return (row < 0) || (col < 0) || (row >= nrows) || (col >= ncols);
+    return (row < 0) || (static_cast<uint64_t>(row) >= nrows) || (col < 0)
+        || (static_cast<uint64_t>(col) >= ncols);
+}
+
+struct TraceResult {
+    bool has_loop;
+    std::vector<std::vector<std::uint8_t>> records;
+};
+
+TraceResult trace(const std::vector<std::string>& map, std::uint64_t row, std::uint64_t col)
+{
+    const auto nrows = map.size();
+    const auto ncols = map[0].size();
+    std::vector<std::vector<std::uint8_t>> records(nrows, std::vector<std::uint8_t>(ncols, 0));
+
+    char direction = map[row][col];
+    while (true) {
+        if (been_there(records, row, col, direction)) {
+            return { true, records };
+        }
+
+        records[row][col] |= encode_direction(direction);
+
+        constexpr std::uint64_t max_direction_changes { 4 };
+        for (std::uint64_t i {}; i < max_direction_changes; ++i) {
+            auto [snext_row, snext_col] = next(row, col, direction);
+
+            if (out_of_bound(nrows, ncols, snext_row, snext_col)) {
+                return { false, records };
+            }
+
+            const auto next_row = static_cast<uint64_t>(snext_row);
+            const auto next_col = static_cast<uint64_t>(snext_col);
+            if (has_obtacle(map, next_row, next_col)) {
+                direction = change_direction(direction);
+            } else {
+                row = next_row;
+                col = next_col;
+                break;
+            }
+        }
+    }
+}
+
+std::pair<std::uint64_t, std::uint64_t> find_starting_position(std::span<const std::string> map)
+{
+    const auto nrows = map.size();
+    const auto ncols = map[0].size();
+
+    for (std::uint64_t i {}; i < nrows; ++i) {
+        for (std::uint64_t j = 0; j < ncols; ++j) {
+            const auto ch = map[i][j];
+            if (ch == '^' || ch == '>' || ch == 'v' || ch == '<') {
+                return { i, j };
+            }
+        }
+    }
+
+    throw std::invalid_argument("Startinng position not found");
 }
 
 int main()
@@ -76,83 +137,35 @@ int main()
     while (std::getline(std::cin, line)) {
         map.push_back(line);
     }
+    const auto [init_row, init_col] = find_starting_position(map);
 
-    const std::int64_t nrows = static_cast<std::int64_t>(map.size());
-    const std::int64_t ncols = static_cast<std::int64_t>(map[0].size());
-    std::int64_t row {};
-    std::int64_t col {};
-    char direction { '>' };
-    bool found { false };
-    for (std::size_t i { 0 }; i < map.size() && !found; ++i) {
-        const auto& line = map[i];
-        for (std::size_t j = 0; j < map[i].length() && !found; ++j) {
-            if (line[j] == '^' || line[j] == '>' || line[j] == 'v' || line[j] == '<') {
-                row = static_cast<std::int64_t>(i);
-                col = static_cast<std::int64_t>(j);
-                direction = line[j];
-                found = true;
-            }
-        }
-    }
-
-    if (!found) {
-        throw std::invalid_argument("Position not found");
-    }
-
-    std::vector<std::vector<std::uint8_t>> records(
-        map.size(), std::vector<std::uint8_t>(map[0].length(), 0));
-
-    while (true) {
-        const std::uint8_t ed = encode_direction(direction);
-        records[static_cast<std::size_t>(row)][static_cast<std::size_t>(col)] |= ed;
-
-        // std::cout << "Current board: " << std::endl;
-        // for (std::size_t i { 0 }; i < map.size(); ++i) {
-        //     for (std::size_t j { 0 }; j < map[0].size(); ++j) {
-        //         if (map[i][j] == '#') {
-        //             std::cout << '#';
-        //         } else if (records[i][j] == 0) {
-        //             std::cout << ' ';
-        //         } else {
-        //             std::cout << (int)records[i][j];
-        //         }
-        //     }
-        //     std::cout << std::endl;
-        // }
-        // std::cout << std::endl;
-
-        bool has_next { false };
-        for (std::size_t i { 0 }; i < 4; ++i) {
-            auto [next_row, next_col] = next(row, col, direction);
-
-            if (out_of_bound(nrows, ncols, next_row, next_col)) {
-                break;
-            }
-
-            if (been_there(records, next_row, next_col, direction)) {
-                break;
-            }
-
-            if (has_obtacle(map, next_row, next_col)) {
-                direction = change_direction(direction);
-            } else {
-                row = next_row;
-                col = next_col;
-                has_next = true;
-                break;
-            }
-        }
-
-        if (!has_next) {
-            break;
-        }
-    }
-
-    std::int64_t result {};
+    // Part 1
+    std::int64_t part1_res {};
+    const auto records = trace(map, init_row, init_col).records;
     for (const auto& row : records) {
-        result += std::count_if(row.begin(), row.end(), [](auto val) { return val != 0; });
+        part1_res += std::count_if(row.begin(), row.end(), [](auto val) { return val != 0; });
+    }
+    std::println("Part 1 result: {}", part1_res);
+
+    // Part 2, brute-force solution
+    std::int64_t part2_res {};
+    for (std::uint64_t i {}; i < map.size(); ++i) {
+        for (std::uint64_t j {}; j < map[0].size(); ++j) {
+            // only put obstacle on an empty block on the original path, otherwise there's no change
+            // in the trace
+            if ((map[i][j] == '.') && records[i][j]) {
+                map[i][j] = '#';
+                if (trace(map, init_row, init_col).has_loop) {
+                    ++part2_res;
+                }
+
+                // Remove the obstacle before trying with a new position
+                map[i][j] = '.';
+            }
+        }
     }
 
-    std::cout << "Result part 1: " << result << std::endl;
+    std::println("Part 2 result: {}", part2_res);
+
     return 0;
 }

@@ -1,0 +1,119 @@
+#include <algorithm>
+#include <cstdint>
+#include <iostream>
+#include <limits>
+#include <print>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
+
+int main()
+{
+    std::string line;
+    std::uint64_t row { 0 };
+
+    std::vector<std::vector<std::uint8_t>> map;
+    std::vector<std::vector<std::pair<std::uint64_t, std::uint64_t>>> height_to_coords(
+        10, std::vector<std::pair<std::uint64_t, std::uint64_t>> {});
+
+    std::uint64_t ncols { std::numeric_limits<std::uint64_t>::max() };
+
+    while (std::getline(std::cin, line)) {
+        // Check input consistency
+        if (ncols == std::numeric_limits<std::uint64_t>::max()) {
+            ncols = line.length();
+        } else if (ncols != line.length()) {
+            throw std::invalid_argument("Inconsistent line length");
+        }
+
+        std::vector<std::uint8_t> heights(line.length(), 0);
+        std::transform(line.begin(), line.end(), heights.begin(),
+            [](char digit) { return static_cast<std::uint8_t>(digit - '0'); });
+        map.push_back(std::move(heights));
+
+        for (std::uint64_t col { 0 }; col < line.length(); ++col) {
+            std::uint64_t height = static_cast<std::uint64_t>(line[col] - '0');
+            height_to_coords.at(height).push_back(std::make_pair(row, col));
+        }
+        ++row;
+    }
+
+    const std::uint64_t nrows = row;
+
+    std::println("Map");
+    for (const auto& r : map) {
+        for (auto v : r) {
+            std::print("{}", v);
+        }
+        std::println();
+    }
+
+    std::println("Height maps:");
+    for (std::uint64_t i { 0 }; i < height_to_coords.size(); ++i) {
+        std::print("{}: ", i);
+        for (auto [r, c] : height_to_coords[i]) {
+            std::print("[{}, {}] ", r, c);
+        }
+        std::println();
+    }
+
+    // score[i][j] = the number of partial paths starting from map[i][j] and end at 9.
+    std::vector<std::vector<std::uint64_t>> scores(nrows, std::vector<std::uint64_t>(ncols, 0));
+
+
+    auto print_scores = [&scores, &map]() {
+        std::println("Current score:");
+        std::println("==============================");
+        for (std::uint64_t r { 0 }; r < scores.size(); ++r) {
+            for (std::uint64_t c { 0 }; c < scores[0].size(); ++c) {
+                std::print("{:3d}[{}]", scores[r][c], map[r][c]);
+            }
+            std::println();
+        }
+        std::println();
+    };
+
+    // Init: calculate score for height 9.
+    for (auto [row, col] : height_to_coords[9]) {
+        scores[row][col] = 1;
+    }
+    print_scores();
+
+    // Calculate scores for height i - 1; i = 9..1
+    for (std::uint8_t height = 9; height > 0; --height) {
+        for (auto [row, col] : height_to_coords[height - 1]) {
+            const auto min_row = row > 0 ? row - 1 : 0;
+            const auto max_row = row + 1 < nrows ? row + 1 : row;
+            const auto min_col = col > 0 ? col - 1 : 0;
+            const auto max_col = col + 1 < ncols ? col + 1 : col;
+
+            for (auto neighbor_r { min_row }; neighbor_r <= max_row; ++neighbor_r) {
+                for (auto neighbor_c { min_col }; neighbor_c <= max_col; ++neighbor_c) {
+                    if (neighbor_r != row && neighbor_c != col) {
+                        // Skip diagonal neighbor
+                        continue;
+                    }
+                    if (map[neighbor_r][neighbor_c] == height) {
+                        scores[row][col] += scores[neighbor_r][neighbor_c];
+                    }
+                }
+            }
+        }
+        print_scores();
+    }
+
+    // Total score for heights
+    std::uint64_t total { 0 };
+    for (std::uint64_t r { 0 }; r < nrows; ++r) {
+        for (std::uint64_t c { 0 }; c < ncols; ++c) {
+            if (map[r][c] == 0) {
+                total += scores[r][c];
+            }
+        }
+    }
+
+    std::println("Part 1 score: {}", total);
+
+    return 0;
+}

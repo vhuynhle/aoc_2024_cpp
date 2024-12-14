@@ -39,6 +39,9 @@ void step(std::span<Config> current_configs, std::int64_t width, std::int64_t he
 
 void to_picture(std::span<const Config> configs, std::span<std::byte> pic, std::int64_t width);
 
+double concentration_score(
+    std::span<const Config> configs, std::int64_t width, std::int64_t height);
+
 int main(int argc, char* argv[])
 {
     if (argc != 4) {
@@ -78,23 +81,38 @@ int main(int argc, char* argv[])
     static constexpr std::int64_t rgb_pixel_bytes { 3 };
     std::vector<std::byte> picture(
         static_cast<std::uint64_t>(rgb_pixel_bytes * width * height), std::byte { 0 });
+    std::vector<std::pair<std::uint64_t, double>> concentration_scores(
+        10000, std::pair<std::uint64_t, double> { 0, 0 });
 
     std::string out_file {};
-    for (std::size_t i {}; i < 10000; ++i) {
+    for (std::uint64_t i {}; i < 10000; ++i) {
         to_picture(configs, picture, width);
 
         out_file.clear();
         std::format_to(std::back_inserter(out_file), "image_{:04d}.bmp", i);
 
+        // Method 1: write the image to a file and inspect
+        // Use an external tool to inspect the output images, e.g., Dolphin file explorer.
+        // Viewing the images in "Compact" mode is best.
         stbi_write_bmp(out_file.c_str(), static_cast<int>(width), static_cast<int>(height),
             rgb_pixel_bytes, picture.data());
 
+        // Method 2: See how the pixels are distributed
+        const auto score = concentration_score(configs, width, height);
+        concentration_scores[i] = std::pair<std::uint64_t, double> { i, score };
         step(configs, width, height);
     }
 
-    // Use an external tool to inspect the output images, e.g., Dolphin file explorer.
-    // Viewing the images in "Compact" mode is best.
-    // Result: 7383
+    // Method 1: Inspect all the generated images using a previewer, e.g., Dolphin's thumbnails.
+
+    // Method 2
+    std::sort(concentration_scores.begin(), concentration_scores.end(),
+        [](const auto& s1, const auto& s2) -> bool { return s1.second > s2.second; });
+    std::println("Top 10 candidates:");
+    for (std::uint64_t i { 0 }; i < 10; ++i) {
+        std::println("Step {:04d}, score {:.2f}", concentration_scores[i].first,
+            concentration_scores[i].second);
+    }
 
     return 0;
 }
@@ -183,9 +201,31 @@ void to_picture(std::span<const Config> configs, std::span<std::byte> pic, std::
 {
     std::fill(pic.begin(), pic.end(), std::byte { 255 });
     for (const auto& config : configs) {
-        std::uint64_t pixel = static_cast<std::size_t>(config.y * width + config.x);
+        std::uint64_t pixel = static_cast<std::uint64_t>(config.y * width + config.x);
         pic[3 * pixel + 0] = std::byte { 0 };
         pic[3 * pixel + 1] = std::byte { 0 };
         pic[3 * pixel + 2] = std::byte { 0 };
     }
+}
+
+double concentration_score(std::span<const Config> configs, std::int64_t width, std::int64_t height)
+{
+    // Divide the whole range into 16 rectangles and count the number of points in each rectangle
+    std::array<std::int64_t, 16> rects = {};
+    for (const auto& config : configs) {
+        const auto x_partition = (config.x * 4) / width;
+        const auto y_partition = (config.y * 4) / height;
+        const auto partition = x_partition * 4 + y_partition;
+        ++rects[static_cast<std::uint64_t>(partition)];
+    }
+
+    // Compare the distribution of the densest and the second densest regions
+    std::sort(rects.begin(), rects.end());
+    const auto sparse_score
+        = std::accumulate(rects.begin() + 8, rects.begin() + 12, static_cast<std::int64_t>(0));
+    const auto dense_score
+        = std::accumulate(rects.begin() + 12, rects.end(), static_cast<std::int64_t>(0));
+
+    return sparse_score == 0 ? 1000
+                             : static_cast<double>(dense_score) / static_cast<double>(sparse_score);
 }

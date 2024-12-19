@@ -1,15 +1,12 @@
 #include <algorithm>
 #include <cstdint>
-#include <deque>
 #include <format>
 #include <iostream>
 #include <iterator>
 #include <optional>
 #include <print>
-#include <set>
 #include <stdexcept>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -23,7 +20,7 @@ public:
         , memory { std::move(mem) }
     {
         if (memory.size() < 2) {
-            throw std::runtime_error { "Program too short." };
+            throw std::runtime_error { "Program too short" };
         }
     }
 
@@ -37,38 +34,16 @@ public:
     {
         bool first { true };
         while (!halted()) {
-
-            std::println("{} {} {} {}", regA, regB, regC, pc);
-
             const std::optional<std::uint8_t> output = step();
             if (output.has_value()) {
                 if (first) {
-                    std::println("{}", *output);
+                    std::print("{}", *output);
                     first = false;
                 } else {
-                    std::println("{}", *output);
+                    std::print(",{}", *output);
                 }
             }
         }
-
-        std::println("\n>>> Halted <<<");
-    }
-
-    bool check_self_generation()
-    {
-        std::vector<std::uint8_t> output_sequence {};
-
-        while (!halted()) {
-            auto output = step();
-            if (output) {
-                output_sequence.emplace_back(*output);
-                if (output_sequence.size() == memory.size()) {
-                    return output_sequence == memory;
-                }
-            }
-        }
-
-        return false;
     }
 
     bool halted() const
@@ -137,6 +112,54 @@ public:
     }
 };
 
+namespace p2 {
+std::pair<std::uint64_t, std::uint8_t> process(std::uint64_t a)
+{
+    if (a == 0) {
+        return { 0, 255u };
+    }
+
+    auto b = (a & 0b111) ^ 3;
+    auto c = (a >> b);
+    b ^= 5;
+    a >>= 3;
+    b ^= c;
+    const auto out = static_cast<std::uint8_t>(b & 0b111);
+    return { a, out };
+}
+
+std::vector<std::uint64_t> reg_a_preimage(std::uint64_t a, std::uint8_t out)
+{
+    std::vector<std::uint64_t> preimages {};
+    for (std::uint64_t preimage = a * 8; preimage < a * 8 + 8; ++preimage) {
+        if (process(preimage) == std::make_pair(a, out)) {
+            preimages.push_back(preimage);
+        }
+    }
+
+    return preimages;
+}
+
+/// Find the pre-image values of register A so that
+// p2::process(preimage) set reg A to reg_a_out and return the desired output
+std::vector<std::uint64_t> traceback(
+    std::vector<std::uint64_t> reg_a_out, std::span<const std::uint8_t> reversed_output)
+{
+    if (reversed_output.empty()) {
+        return reg_a_out;
+    }
+
+    std::vector<std::uint64_t> res;
+    for (auto reg_a_after : reg_a_out) {
+        auto reg_a_preimages = reg_a_preimage(reg_a_after, reversed_output.front());
+        std::copy(reg_a_preimages.begin(), reg_a_preimages.end(), std::back_inserter(res));
+    }
+
+    return traceback(res, reversed_output.subspan(1));
+}
+
+}
+
 int main()
 {
     std::string line;
@@ -166,7 +189,6 @@ int main()
     while (true) {
         std::cin >> num;
         memory.push_back(static_cast<std::uint8_t>(num));
-        std::print("{} ", num);
         if (!(std::cin >> ignore_char)) {
             break;
         }
@@ -174,25 +196,14 @@ int main()
     std::println();
 
     // Part 1
-    Chip chip { initA, initB, initC, std::move(memory) };
+    Chip chip { initA, initB, initC, memory };
     chip.execute();
 
+    std::reverse(memory.begin(), memory.end());
 
-    // Part 2
-    // initA = 0;
-    // while (true) {
-    //     chip.regA = initA;
-    //     chip.regB = initB;
-    //     chip.regC = initC;
-    //     chip.pc = 0;
-    //     if (chip.check_self_generation()) {
-    //         break;
-    //     }
-
-    //     ++initA;
-    // }
-
-    // std::println("Part 2 result: {}", initA);
+    const auto candidates = p2::traceback({ 0 }, memory);
+    auto res = std::min_element(candidates.begin(), candidates.end());
+    std::println("Part 2 result: {}", *res);
 
     return 0;
 }

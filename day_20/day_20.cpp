@@ -6,7 +6,6 @@
 #include <map>
 #include <print>
 #include <queue>
-#include <set>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -134,61 +133,25 @@ void find_cheats(
     std::println("Number of cheats: {}", ncheats);
 }
 
-void find_cheats(std::span<const std::string> grid, std::span<const Coord> path,
-    std::uint64_t max_cheat_length, std::uint64_t min_advantage)
+std::uint64_t manhattan_distance(Coord d1, Coord d2)
 {
+    const auto [x1, y1] = d1;
+    const auto [x2, y2] = d2;
+    const auto dx = (x1 >= x2) ? (x1 - x2) : (x2 - x1);
+    const auto dy = (y1 >= y2) ? (y1 - y2) : (y2 - y1);
+    return dx + dy;
+}
 
-    std::map<Coord, std::uint64_t> distances;
-    for (std::uint64_t i { 0 }; i < path.size(); ++i) {
-        distances[path[i]] = i;
-    }
-
-    const auto nrows = grid.size();
-    const auto ncols = grid.front().size();
-
+void find_cheats(
+    std::span<const Coord> path, std::uint64_t max_cheat_length, std::uint64_t min_advantage)
+{
     std::uint64_t ncheats {};
-    for (std::uint64_t d { 0 }; d < path.size(); ++d) {
-
-        // bfs from the current point
-        const Coord start = path[d];
-        std::queue<std::pair<Coord, std::uint64_t>> q;
-        std::set<Coord> visited {};
-        std::set<Coord> cheat_ends {};
-        q.emplace(start, 0);
-        visited.emplace(start);
-
-        while (!q.empty()) {
-            const auto [current, current_distance] = q.front();
-            q.pop();
-
-            for (auto next : get_neighbors(current.first, current.second)) {
-                const auto [nr, nc] = next;
-                if ((nr >= nrows) || (nc >= ncols) || visited.contains(next)) {
-                    continue;
-                }
-
-                const auto next_distance = current_distance + 1;
-
-                if (grid[nr][nc] != '#') { // Check if this is a potential cheat end point
-                    auto it = distances.find(next);
-                    if (it != distances.end()) {
-                        const auto nocheat_cost = it->second;
-                        const auto cheat_cost = d + next_distance;
-                        if (cheat_cost + min_advantage <= nocheat_cost) { // Beneficial cheat
-                            cheat_ends.emplace(next);
-                        }
-                    }
-                }
-
-                // Continue the cheat
-                if ((next_distance < max_cheat_length) && !visited.contains(next)) {
-                    q.emplace(next, next_distance);
-                    visited.emplace(next);
-                }
-            }
+    for (std::uint64_t d1 { 0 }; d1 < path.size(); ++d1) {
+        for (std::uint64_t d2 { d1 + min_advantage + 2 }; d2 < path.size(); ++d2) {
+            const auto cheat_distance = manhattan_distance(path[d1], path[d2]);
+            const auto advantage = (d2 - d1) - cheat_distance;
+            ncheats += ((cheat_distance <= max_cheat_length) && (advantage >= min_advantage));
         }
-
-        ncheats += cheat_ends.size();
     }
 
     std::println("Number of cheats: {}", ncheats);
@@ -207,9 +170,9 @@ int main(int argc, char* argv[])
 
     const auto [grid, start, end] = read_input();
     const auto path = find_path(grid, start, end);
+    std::println("Path length: {}", path.size());
 
     find_cheats(grid, path, min_advantage);
-
-    find_cheats(grid, path, p2_max_cheat_length, min_advantage);
+    find_cheats(path, p2_max_cheat_length, min_advantage);
     return 0;
 }

@@ -157,6 +157,75 @@ void find_cheats(
     std::println("Number of cheats: {}", ncheats);
 }
 
+template <typename T>
+using Matrix = std::vector<std::vector<T>>;
+
+void find_cheats_fast(std::span<const Coord> path, std::uint64_t max_cheat_length,
+    std::uint64_t min_advantage, std::uint64_t nrows, std::uint64_t ncols)
+{
+    // Divide the big grid of size (nrows x ncols) into grid of size ((max_cheat_length + 1) x
+    // (max_cheat_length + 1))
+    // Only points in the same or neighboring grids need to be considered as start and end points
+    // of cheats
+
+    struct Record {
+        Coord coord;
+        std::uint64_t distance;
+    };
+    using RecordList = std::vector<Record>;
+
+    const auto group_nrows = nrows / (max_cheat_length + 1) + 1;
+    const auto group_ncols = ncols / (max_cheat_length + 1) + 1;
+    Matrix<RecordList> groups(group_ncols, std::vector<RecordList>(group_ncols, RecordList {}));
+
+    for (std::uint64_t distance { 0 }; distance < path.size(); ++distance) {
+        const auto coord = path[distance];
+        const auto group_row = coord.first / (max_cheat_length + 1);
+        const auto group_col = coord.second / (max_cheat_length + 1);
+        groups[group_row][group_col].emplace_back(coord, distance);
+    }
+
+    const auto surrounding_groups = [](std::uint64_t i, std::uint64_t j) {
+        return std::array<std::pair<std::uint64_t, std::uint64_t>, 9> { {
+            { i - 1, j - 1 },
+            { i - 1, j },
+            { i - 1, j + 1 },
+            { i, j - 1 },
+            { i, j },
+            { i, j + 1 },
+            { i + 1, j - 1 },
+            { i + 1, j },
+            { i + 1, j + 1 },
+        } };
+    };
+
+    std::uint64_t ncheats {};
+    for (std::uint64_t i { 0 }; i < groups.size(); ++i) {
+        for (std::uint64_t j { 0 }; j < groups.front().size(); ++j) {
+            for (auto [coord1, distance1] : groups[i][j]) { // Iterate over the records in a grid
+
+                // Consider records in neighboring grids as cheat candidate
+                for (auto [ni, nj] : surrounding_groups(i, j)) {
+                    if ((ni >= group_nrows) || (nj >= group_ncols)) {
+                        continue;
+                    }
+
+                    for (auto [coord2, distance2] : groups[ni][nj]) {
+                        if (distance2 >= distance1 + min_advantage + 2) {
+                            const auto cheat_distance = manhattan_distance(coord1, coord2);
+                            const auto advantage = (distance2 - distance1) - cheat_distance;
+                            ncheats += ((cheat_distance <= max_cheat_length)
+                                && (advantage >= min_advantage));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::println("Number of cheats: {}", ncheats);
+}
+
 int main(int argc, char* argv[])
 {
     if (argc != 3) {
@@ -173,6 +242,7 @@ int main(int argc, char* argv[])
     std::println("Path length: {}", path.size());
 
     find_cheats(grid, path, min_advantage);
-    find_cheats(path, p2_max_cheat_length, min_advantage);
+    // find_cheats(path, p2_max_cheat_length, min_advantage);
+    find_cheats_fast(path, p2_max_cheat_length, min_advantage, grid.size(), grid.front().size());
     return 0;
 }

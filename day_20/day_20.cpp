@@ -13,13 +13,13 @@
 #include <utility>
 #include <vector>
 
-using Coord = std::pair<std::uint64_t, std::uint64_t>;
+using Position = std::pair<std::uint64_t, std::uint64_t>;
 
-std::tuple<std::vector<std::string>, Coord, Coord> read_input()
+std::tuple<std::vector<std::string>, Position, Position> read_input()
 {
     std::vector<std::string> grid;
-    Coord start;
-    Coord end;
+    Position start;
+    Position end;
 
     std::string line;
     std::uint64_t row { 0 };
@@ -44,7 +44,7 @@ std::tuple<std::vector<std::string>, Coord, Coord> read_input()
     return { grid, start, end };
 }
 
-static inline std::array<Coord, 4> get_neighbors(std::uint64_t row, std::uint64_t col)
+static inline std::array<Position, 4> get_neighbors(std::uint64_t row, std::uint64_t col)
 {
     return { {
         { row, col - 1 },
@@ -54,14 +54,14 @@ static inline std::array<Coord, 4> get_neighbors(std::uint64_t row, std::uint64_
     } };
 }
 
-std::vector<Coord> find_path(std::span<const std::string> grid, Coord start, Coord end)
+std::vector<Position> find_path(std::span<const std::string> grid, Position start, Position end)
 {
     const std::uint64_t nrows = grid.size();
     const std::uint64_t ncols = grid.front().size();
 
-    std::vector<std::vector<Coord>> prev(nrows, std::vector<Coord>(ncols));
+    std::vector<std::vector<Position>> prev(nrows, std::vector<Position>(ncols));
     std::vector<std::vector<std::uint8_t>> visited(nrows, std::vector<std::uint8_t>(ncols, 0));
-    std::queue<Coord> q;
+    std::queue<Position> q;
     visited[start.first][start.second] = 1;
 
     q.emplace(start);
@@ -86,8 +86,8 @@ std::vector<Coord> find_path(std::span<const std::string> grid, Coord start, Coo
         throw std::invalid_argument { "Path not found" };
     }
 
-    auto res = std::vector<Coord> {};
-    Coord c = end;
+    auto res = std::vector<Position> {};
+    Position c = end;
     res.push_back(c);
     while (c != start) {
         c = prev[c.first][c.second];
@@ -99,10 +99,10 @@ std::vector<Coord> find_path(std::span<const std::string> grid, Coord start, Coo
 }
 
 void find_cheats(
-    std::span<const std::string> grid, std::span<const Coord> path, std::uint64_t min_advantage)
+    std::span<const std::string> grid, std::span<const Position> path, std::uint64_t min_advantage)
 {
 
-    std::map<Coord, std::uint64_t> distances;
+    std::map<Position, std::uint64_t> distances;
     for (std::uint64_t i { 0 }; i < path.size(); ++i) {
         distances[path[i]] = i;
     }
@@ -113,7 +113,7 @@ void find_cheats(
     std::uint64_t ncheats {};
     for (std::uint64_t d { 0 }; d < path.size(); ++d) {
         const auto [row, col] = path[d];
-        const auto potential_clips = std::array<Coord, 4> { {
+        const auto potential_clips = std::array<Position, 4> { {
             { row, col - 2 },
             { row, col + 2 },
             { row - 2, col },
@@ -133,7 +133,7 @@ void find_cheats(
     std::println("Number of cheats: {}", ncheats);
 }
 
-std::uint64_t manhattan_distance(Coord d1, Coord d2)
+std::uint64_t manhattan_distance(Position d1, Position d2)
 {
     const auto [x1, y1] = d1;
     const auto [x2, y2] = d2;
@@ -143,7 +143,7 @@ std::uint64_t manhattan_distance(Coord d1, Coord d2)
 }
 
 void find_cheats(
-    std::span<const Coord> path, std::uint64_t max_cheat_length, std::uint64_t min_advantage)
+    std::span<const Position> path, std::uint64_t max_cheat_length, std::uint64_t min_advantage)
 {
     std::uint64_t ncheats {};
     for (std::uint64_t d1 { 0 }; d1 < path.size(); ++d1) {
@@ -160,7 +160,7 @@ void find_cheats(
 template <typename T>
 using Matrix = std::vector<std::vector<T>>;
 
-void find_cheats_fast(std::span<const Coord> path, std::uint64_t max_cheat_length,
+void find_cheats_fast(std::span<const Position> path, std::uint64_t max_cheat_length,
     std::uint64_t min_advantage, std::uint64_t nrows, std::uint64_t ncols)
 {
     // Divide the big grid of size (nrows x ncols) into grid of size ((max_cheat_length + 1) x
@@ -169,7 +169,7 @@ void find_cheats_fast(std::span<const Coord> path, std::uint64_t max_cheat_lengt
     // of cheats
 
     struct Record {
-        Coord coord;
+        Position coord;
         std::uint64_t distance;
     };
     using RecordList = std::vector<Record>;

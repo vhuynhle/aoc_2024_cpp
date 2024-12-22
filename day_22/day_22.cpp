@@ -18,6 +18,15 @@ static inline std::uint64_t transform(std::uint64_t seed)
 static constexpr std::int8_t kOffset { 9 };  // convert the changes from [-9, 9] -> [0, 18]
 static constexpr std::uint64_t kBase { 19 }; // enough to hold all digits [0, 18]
 
+static std::uint64_t get_final_secret(std::uint64_t seed, std::uint64_t nrounds)
+{
+    std::uint64_t rng_state { seed };
+    for (std::uint64_t i { 0 }; i < nrounds; ++i) {
+        rng_state = transform(rng_state);
+    }
+    return rng_state;
+}
+
 static std::array<std::int8_t, 4> index2changeseq(std::uint64_t index)
 {
     std::array<std::int8_t, 4> res;
@@ -43,9 +52,10 @@ static inline std::uint64_t update_changeseq_index(
         + change;            // add e to (b, c, d, 0) -> (b, c, d, e)
 }
 
-std::vector<std::uint8_t> get_change_seq_to_price_map(std::uint64_t seed, std::uint64_t n)
+static void changeseqs_to_prices(
+    std::uint64_t seed, std::uint64_t n, std::vector<std::uint64_t>& acc)
 {
-    std::uint64_t secret = seed; // s0
+    std::uint64_t secret = seed;
     std::uint64_t prev_price = secret % 10;
 
     std::uint64_t prev_changeseq { 0 };
@@ -57,25 +67,22 @@ std::vector<std::uint8_t> get_change_seq_to_price_map(std::uint64_t seed, std::u
         prev_price = price;
     }
 
-    // Map from a change (a, b, c, d) to a price
-    std::vector<std::uint8_t> seq_to_prices(kBase * kBase * kBase * kBase, 0);
-    std::vector<std::uint8_t> computed(kBase * kBase * kBase * kBase, 0);
+    // Keep track of if we've already sold for a sequence
+    std::vector<std::uint8_t> sold(kBase * kBase * kBase * kBase, 0);
 
     for (std::uint64_t i { 4 }; i <= n; ++i) {
         secret = transform(secret);
         const auto price = secret % 10;
         const auto changeseq = update_changeseq_index(prev_changeseq, prev_price, price);
 
-        if (!computed[changeseq]) {
-            seq_to_prices[changeseq] = static_cast<std::uint8_t>(price);
-            computed[changeseq] = 1;
+        if (!sold[changeseq]) {
+            acc[changeseq] += price;
+            sold[changeseq] = 1;
         }
 
         prev_price = price;
         prev_changeseq = changeseq;
     }
-
-    return seq_to_prices;
 }
 
 int main()
@@ -87,23 +94,11 @@ int main()
     std::vector<std::uint64_t> seq_to_total_prices(kBase * kBase * kBase * kBase, 0);
 
     while (std::cin >> seed) {
-        std::vector<std::int8_t> prices;
-        prices.reserve(rounds);
-
-        std::uint64_t current { seed };
-        for (std::uint64_t i { 0 }; i < rounds; ++i) {
-            current = transform(current);
-            const auto price = static_cast<std::int8_t>(current % 10);
-            prices.push_back(price);
-        }
-        part1_sum += current;
+        // part 1
+        part1_sum += get_final_secret(seed, rounds);
 
         // part 2
-        const auto seq_to_prices = get_change_seq_to_price_map(seed, rounds);
-
-        for (std::uint64_t i { 0 }; i < seq_to_total_prices.size(); ++i) {
-            seq_to_total_prices[i] += seq_to_prices[i];
-        }
+        changeseqs_to_prices(seed, rounds, seq_to_total_prices);
     }
 
     std::println("Part 1 result: {}", part1_sum);
@@ -111,7 +106,6 @@ int main()
     auto max_price_it = std::max_element(seq_to_total_prices.begin(), seq_to_total_prices.end());
     auto index = std::distance(seq_to_total_prices.begin(), max_price_it);
     const auto best_seq = index2changeseq(static_cast<std::uint64_t>(index));
-
     std::println("Part 2: best sequence = {},{},{},{}, total prices = {}", best_seq[0], best_seq[1],
         best_seq[2], best_seq[3], *max_price_it);
 

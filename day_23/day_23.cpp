@@ -115,12 +115,19 @@ int main()
     std::vector<std::vector<std::uint16_t>> adjacency_lists(
         max_node_nums, std::vector<std::uint16_t> {});
 
+    std::vector<std::vector<std::uint16_t>> directed_adjacency_lists(
+        max_node_nums, std::vector<std::uint16_t> {});
+
     std::string line;
     while (std::getline(std::cin, line)) {
         const auto pc1 = node_name_to_number(line[0], line[1]);
         const auto pc2 = node_name_to_number(line[3], line[4]);
         add_if_not_exists(adjacency_lists[pc1], pc2);
         add_if_not_exists(adjacency_lists[pc2], pc1);
+
+        auto n1 = std::min(pc1, pc2);
+        auto n2 = std::max(pc1, pc2);
+        add_if_not_exists(directed_adjacency_lists[n1], n2);
     }
 
     const auto start_t_node = node_name_to_number('t', 'a');
@@ -144,19 +151,19 @@ int main()
 
     // Part 2
     // Sort the adjacency lists so that we can use set_intersection
-    for (auto& adjacency_list : adjacency_lists) {
+    for (auto& adjacency_list : directed_adjacency_lists) {
         std::ranges::sort(adjacency_list);
     }
 
     // Filter out unconnected nodes
     std::vector<std::uint16_t> nodes {};
     for (std::uint16_t i { 0 }; i < max_node_nums; ++i) {
-        if (!adjacency_lists[i].empty()) {
+        if (!directed_adjacency_lists[i].empty()) {
             nodes.push_back(i);
         }
     }
 
-    auto max_kgraph = find_max_kgraph(nodes, adjacency_lists);
+    auto max_kgraph = find_max_kgraph(nodes, directed_adjacency_lists);
     std::ranges::reverse(max_kgraph);
     std::println("Part 2 result: {}", nodes_to_str(max_kgraph));
     std::println("find_max_kgraph calls: {}", find_max_kgraph_count);

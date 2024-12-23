@@ -10,8 +10,8 @@
 
 std::pair<std::int64_t, std::int64_t> parse_rule(std::string_view line)
 {
-    std::int64_t a;
-    std::int64_t b;
+    std::int64_t a{};
+    std::int64_t b{};
     const auto bar_pos = line.find('|');
     std::from_chars(line.data(), line.data() + bar_pos, a);
     std::from_chars(line.data() + bar_pos + 1, line.data() + line.length(), b);

@@ -40,10 +40,18 @@ static inline bool add_if_not_exists(std::vector<std::uint16_t>& vec, std::uint1
 static inline std::tuple<std::uint16_t, std::uint16_t, std::uint16_t> sort_tuple(
     std::uint16_t a, std::uint16_t b, std::uint16_t c)
 {
-    const auto min_val = std::min(std::min(a, b), c);
-    const auto max_val = std::max(std::max(a, b), c);
-    const auto mid = static_cast<std::uint16_t>(a + b + c - min_val - max_val);
-    return { min_val, mid, max_val };
+    // Bubble sort
+    if (a > b) {
+        std::swap(a, b);
+    }
+    if (b > c) {
+        std::swap(b, c);
+
+        if (a > b) {
+            std::swap(a, b);
+        }
+    }
+    return { a, b, c };
 }
 
 static std::uint64_t find_max_kgraph_count;

@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cstddef>
-#include <cstdint>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -33,34 +32,34 @@ std::string get_col(const std::vector<std::string>& arr, std::size_t col)
     return res;
 }
 
-std::string get_forward_diagonal(const std::vector<std::string>& arr, std::int64_t d)
+std::string get_forward_diagonal(const std::vector<std::string>& arr, std::size_t d)
 {
-    const std::int64_t m = static_cast<std::int64_t>(arr.size());
-    const std::int64_t n = static_cast<std::int64_t>(arr[0].size());
-    const std::int64_t start_r = (d < m) ? d : (m - 1);
-    const std::int64_t end_r = std::max(std::int64_t { 0 }, d - (n - 1));
+    const std::size_t m = arr.size();
+    const std::size_t n = arr[0].size();
+    const std::size_t start_r = (d < m) ? d : (m - 1);
+    const std::size_t end_r = std::max(std::size_t { 0 }, d - (n - 1));
 
     std::string res {};
-    for (std::int64_t r { start_r }; r >= end_r; --r) {
-        const std::int64_t c = d - r;
-        res.push_back(arr[static_cast<std::size_t>(r)][static_cast<std::size_t>(c)]);
+    for (std::size_t r { start_r }; (r >= end_r) && (r <= start_r); --r) {
+        const std::size_t c = d - r;
+        res.push_back(arr[r][c]);
     }
     return res;
 }
 
-std::string get_backward_diagonal(const std::vector<std::string>& arr, int64_t d)
+std::string get_backward_diagonal(const std::vector<std::string>& arr, size_t d)
 {
     // Diagonal d:
     // (r - c) + (n - 1) = d
-    const std::int64_t m = static_cast<std::int64_t>(arr.size());
-    const std::int64_t n = static_cast<std::int64_t>(arr[0].size());
-    const std::int64_t start_c = (d < n) ? (n - 1 - d) : 0;
-    const std::int64_t end_c = std::min(n - 1, (m - 1) + (n - 1) - d);
+    const std::size_t m = arr.size();
+    const std::size_t n = arr[0].size();
+    const std::size_t start_c = (d < n) ? (n - 1 - d) : 0;
+    const std::size_t end_c = std::min(n - 1, (m - 1) + (n - 1) - d);
 
     std::string res {};
-    for (std::int64_t c { start_c }; c <= end_c; ++c) {
-        const std::int64_t r = c - ((n - 1) - d);
-        res.push_back(arr[static_cast<std::size_t>(r)][static_cast<std::size_t>(c)]);
+    for (std::size_t c { start_c }; c <= end_c; ++c) {
+        const std::size_t r = c - ((n - 1) - d);
+        res.push_back(arr[r][c]);
     }
 
     return res;
@@ -91,14 +90,14 @@ std::size_t count_str(const std::vector<std::string>& arr, const std::string& st
 
     // Diagonal x + y = d;
     for (std::size_t d { 0 }; d < nrows + ncols - 1; ++d) {
-        const auto diagonal = get_forward_diagonal(arr, static_cast<std::int64_t>(d));
+        const auto diagonal = get_forward_diagonal(arr, d);
         result += count_substr(diagonal, str);
         result += count_substr(diagonal, rstr);
     }
 
     // Diagonal r - c + (n - 1) = d
     for (std::size_t d { 0 }; d < nrows + ncols - 1; ++d) {
-        const auto diagonal = get_backward_diagonal(arr, static_cast<std::int64_t>(d));
+        const auto diagonal = get_backward_diagonal(arr, d);
         result += count_substr(diagonal, str);
         result += count_substr(diagonal, rstr);
     }

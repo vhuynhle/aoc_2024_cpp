@@ -1,4 +1,4 @@
---- Day 15: Warehouse Woes ---
+#+TITLE: Day 15: Warehouse Woes
 
 You appear back inside your own mini submarine! Each Historian drives their mini submarine in a different direction; maybe the Chief has his own submarine down here somewhere as well?
 
@@ -14,6 +14,7 @@ The lanternfish already have a map of the warehouse and a list of movements the 
 
 For example:
 
+#+begin_src
 ##########
 #..O..O.O#
 #......O.#
@@ -35,6 +36,7 @@ vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
 <><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
 ^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
 v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
+#+end_src
 
 As the robot (@) attempts to move, if there are any boxes (O) in the way, the robot will also attempt to push those boxes. However, if this action would cause the robot or a box to move into a wall (#), nothing moves instead, including the robot. The initial positions of these are shown on the map at the top of the document the lanternfish gave you.
 
@@ -42,6 +44,7 @@ The rest of the document describes the moves (^ for up, v for down, < for left, 
 
 Here is a smaller example to get started:
 
+#+begin_src
 ########
 #..O.O.#
 ##@.O..#
@@ -52,10 +55,12 @@ Here is a smaller example to get started:
 ########
 
 <^^>>>vv<v>>v<<
+#+end_src
 
 Were the robot to attempt the given sequence of moves, it would push around the boxes as follows:
 
 Initial state:
+#+begin_src
 ########
 #..O.O.#
 ##@.O..#
@@ -64,8 +69,10 @@ Initial state:
 #...O..#
 #......#
 ########
+#+end_src
 
 Move <:
+#+begin_src
 ########
 #..O.O.#
 ##@.O..#
@@ -74,8 +81,10 @@ Move <:
 #...O..#
 #......#
 ########
+#+end_src
 
 Move ^:
+#+begin_src
 ########
 #.@O.O.#
 ##..O..#
@@ -84,8 +93,10 @@ Move ^:
 #...O..#
 #......#
 ########
+#+end_src
 
 Move ^:
+#+begin_src
 ########
 #.@O.O.#
 ##..O..#
@@ -94,8 +105,10 @@ Move ^:
 #...O..#
 #......#
 ########
+#+end_src
 
 Move >:
+#+begin_src
 ########
 #..@OO.#
 ##..O..#
@@ -104,8 +117,10 @@ Move >:
 #...O..#
 #......#
 ########
+#+end_src
 
 Move >:
+#+begin_src
 ########
 #...@OO#
 ##..O..#
@@ -114,8 +129,10 @@ Move >:
 #...O..#
 #......#
 ########
+#+end_src
 
 Move >:
+#+begin_src
 ########
 #...@OO#
 ##..O..#
@@ -124,8 +141,10 @@ Move >:
 #...O..#
 #......#
 ########
+#+end_src
 
 Move v:
+#+begin_src
 ########
 #....OO#
 ##..@..#
@@ -134,8 +153,10 @@ Move v:
 #...O..#
 #...O..#
 ########
+#+end_src
 
 Move v:
+#+begin_src
 ########
 #....OO#
 ##..@..#
@@ -144,8 +165,10 @@ Move v:
 #...O..#
 #...O..#
 ########
+#+end_src
 
 Move <:
+#+begin_src
 ########
 #....OO#
 ##.@...#
@@ -154,8 +177,10 @@ Move <:
 #...O..#
 #...O..#
 ########
+#+end_src
 
 Move v:
+#+begin_src
 ########
 #....OO#
 ##.....#
@@ -164,8 +189,10 @@ Move v:
 #...O..#
 #...O..#
 ########
+#+end_src
 
 Move >:
+#+begin_src
 ########
 #....OO#
 ##.....#
@@ -174,8 +201,10 @@ Move >:
 #...O..#
 #...O..#
 ########
+#+end_src
 
 Move >:
+#+begin_src
 ########
 #....OO#
 ##.....#
@@ -184,8 +213,10 @@ Move >:
 #...O..#
 #...O..#
 ########
+#+end_src
 
 Move v:
+#+begin_src
 ########
 #....OO#
 ##.....#
@@ -194,8 +225,10 @@ Move v:
 #...O..#
 #...O..#
 ########
+#+end_src
 
 Move <:
+#+begin_src
 ########
 #....OO#
 ##.....#
@@ -204,8 +237,10 @@ Move <:
 #...O..#
 #...O..#
 ########
+#+end_src
 
 Move <:
+#+begin_src
 ########
 #....OO#
 ##.....#
@@ -214,9 +249,11 @@ Move <:
 #...O..#
 #...O..#
 ########
+#+end_src
 
 The larger example has many more moves; after the robot has finished those moves, the warehouse would look like this:
 
+#+begin_src
 ##########
 #.O.O.OOO#
 #........#
@@ -227,6 +264,7 @@ The larger example has many more moves; after the robot has finished those moves
 #O.....OO#
 #OO....OO#
 ##########
+#+end_src
 
 The lanternfish use their own custom Goods Positioning System (GPS for short) to track the locations of the boxes. The GPS coordinate of a box is equal to 100 times its distance from the top edge of the map plus its distance from the left edge of the map. (This process does not stop at wall tiles; measure all the way to the edges of the map.)
 
@@ -241,7 +279,8 @@ The lanternfish would like to know the sum of all boxes' GPS coordinates after t
 Predict the motion of the robot and boxes in the warehouse. After the robot is finished moving, what is the sum of all boxes' GPS coordinates?
 
 Your puzzle answer was 1446158.
---- Part Two ---
+
+** Part Two
 
 The lanternfish use your information to find a safe moment to swim in and turn off the malfunctioning robot! Just as they start preparing a festival in your honor, reports start coming in that a second warehouse's robot is also malfunctioning.
 
@@ -249,15 +288,16 @@ This warehouse's layout is surprisingly similar to the one you just helped. Ther
 
 To get the wider warehouse's map, start with your original map and, for each tile, make the following changes:
 
-    If the tile is #, the new map contains ## instead.
-    If the tile is O, the new map contains [] instead.
-    If the tile is ., the new map contains .. instead.
-    If the tile is @, the new map contains @. instead.
+- If the tile is #, the new map contains ## instead.
+- If the tile is O, the new map contains [] instead.
+- If the tile is ., the new map contains .. instead.
+- If the tile is @, the new map contains @. instead.
 
 This will produce a new warehouse map which is twice as wide and with wide boxes that are represented by []. (The robot does not change size.)
 
 The larger example from before would now look like this:
 
+#+begin_src
 ####################
 ##....[]....[]..[]##
 ##............[]..##
@@ -268,9 +308,11 @@ The larger example from before would now look like this:
 ##..[][]..[]..[][]##
 ##........[]......##
 ####################
+#+end_src
 
 Because boxes are now twice as wide but the robot is still the same size and speed, boxes can be aligned such that they directly push two other boxes at once. For example, consider this situation:
 
+#+begin_src
 #######
 #...#.#
 #.....#
@@ -280,10 +322,12 @@ Because boxes are now twice as wide but the robot is still the same size and spe
 #######
 
 <vv<<^^<<^^
+#+end_src
 
 After appropriately resizing this map, the robot would push around these boxes as follows:
 
 Initial state:
+#+begin_src
 ##############
 ##......##..##
 ##..........##
@@ -291,8 +335,10 @@ Initial state:
 ##....[]....##
 ##..........##
 ##############
+#+end_src
 
 Move <:
+#+begin_src
 ##############
 ##......##..##
 ##..........##
@@ -300,8 +346,10 @@ Move <:
 ##....[]....##
 ##..........##
 ##############
+#+end_src
 
 Move v:
+#+begin_src
 ##############
 ##......##..##
 ##..........##
@@ -309,8 +357,10 @@ Move v:
 ##....[].@..##
 ##..........##
 ##############
+#+end_src
 
 Move v:
+#+begin_src
 ##############
 ##......##..##
 ##..........##
@@ -318,8 +368,10 @@ Move v:
 ##....[]....##
 ##.......@..##
 ##############
+#+end_src
 
 Move <:
+#+begin_src
 ##############
 ##......##..##
 ##..........##
@@ -327,8 +379,10 @@ Move <:
 ##....[]....##
 ##......@...##
 ##############
+#+end_src
 
 Move <:
+#+begin_src
 ##############
 ##......##..##
 ##..........##
@@ -336,8 +390,10 @@ Move <:
 ##....[]....##
 ##.....@....##
 ##############
+#+end_src
 
 Move ^:
+#+begin_src
 ##############
 ##......##..##
 ##...[][]...##
@@ -345,8 +401,10 @@ Move ^:
 ##.....@....##
 ##..........##
 ##############
+#+end_src
 
 Move ^:
+#+begin_src
 ##############
 ##......##..##
 ##...[][]...##
@@ -354,8 +412,10 @@ Move ^:
 ##.....@....##
 ##..........##
 ##############
+#+end_src
 
 Move <:
+#+begin_src
 ##############
 ##......##..##
 ##...[][]...##
@@ -363,8 +423,10 @@ Move <:
 ##....@.....##
 ##..........##
 ##############
+#+end_src
 
 Move <:
+#+begin_src
 ##############
 ##......##..##
 ##...[][]...##
@@ -372,8 +434,10 @@ Move <:
 ##...@......##
 ##..........##
 ##############
+#+end_src
 
 Move ^:
+#+begin_src
 ##############
 ##......##..##
 ##...[][]...##
@@ -381,8 +445,10 @@ Move ^:
 ##..........##
 ##..........##
 ##############
+#+end_src
 
 Move ^:
+#+begin_src
 ##############
 ##...[].##..##
 ##...@.[]...##
@@ -390,15 +456,19 @@ Move ^:
 ##..........##
 ##..........##
 ##############
+#+end_src
 
 This warehouse also uses GPS to locate the boxes. For these larger boxes, distances are measured from the edge of the map to the closest edge of the box in question. So, the box shown below has a distance of 1 from the top edge of the map and 5 from the left edge of the map, resulting in a GPS coordinate of 100 * 1 + 5 = 105.
 
+#+begin_src
 ##########
 ##...[]...
 ##........
+#+end_src
 
 In the scaled-up version of the larger example from above, after the robot has finished all of its moves, the warehouse would look like this:
 
+#+begin_src
 ####################
 ##[].......[].[][]##
 ##[]...........[].##
@@ -409,17 +479,10 @@ In the scaled-up version of the larger example from above, after the robot has f
 ##..@......[].[][]##
 ##......[][]..[]..##
 ####################
+#+end_src
 
 The sum of these boxes' GPS coordinates is 9021.
 
 Predict the motion of the robot and boxes in this new, scaled-up warehouse. What is the sum of all boxes' final GPS coordinates?
 
 Your puzzle answer was 1446175.
-
-Both parts of this puzzle are complete! They provide two gold stars: **
-
-At this point, you should return to your Advent calendar and try another puzzle.
-
-If you still want to see it, you can get your puzzle input.
-
-You can also [Shareon Mastodon] this puzzle.

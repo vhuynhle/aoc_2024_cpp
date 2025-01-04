@@ -1,4 +1,4 @@
---- Day 6: Guard Gallivant ---
+#+TITLE: Day 6: Guard Gallivant
 
 The Historians use their fancy device again, this time to whisk you all away to the North Pole prototype suit manufacturing lab... in the year 1518! It turns out that having direct access to history is very convenient for a group of historians.
 
@@ -8,6 +8,7 @@ Maybe you can work out where the guard will go ahead of time so that The Histori
 
 You start by making a map (your puzzle input) of the situation. For example:
 
+#+begin_src
 ....#.....
 .........#
 ..........
@@ -18,16 +19,18 @@ You start by making a map (your puzzle input) of the situation. For example:
 ........#.
 #.........
 ......#...
+#+end_src
 
 The map shows the current position of the guard with ^ (to indicate the guard is currently facing up from the perspective of the map). Any obstructions - crates, desks, alchemical reactors, etc. - are shown as #.
 
 Lab guards in 1518 follow a very strict patrol protocol which involves repeatedly following these steps:
 
-    If there is something directly in front of you, turn right 90 degrees.
-    Otherwise, take a step forward.
+1. If there is something directly in front of you, turn right 90 degrees.
+2. Otherwise, take a step forward.
 
 Following the above protocol, the guard moves up several times until she reaches an obstacle (in this case, a pile of failed suit prototypes):
 
+#+begin_src
 ....#.....
 ....^....#
 ..........
@@ -38,9 +41,11 @@ Following the above protocol, the guard moves up several times until she reaches
 ........#.
 #.........
 ......#...
+#+end_src
 
 Because there is now an obstacle in front of the guard, she turns right before continuing straight in her new facing direction:
 
+#+begin_src
 ....#.....
 ........>#
 ..........
@@ -51,9 +56,11 @@ Because there is now an obstacle in front of the guard, she turns right before c
 ........#.
 #.........
 ......#...
+#+end_src
 
 Reaching another obstacle (a spool of several very long polymers), she turns right again and continues downward:
 
+#+begin_src
 ....#.....
 .........#
 ..........
@@ -64,9 +71,11 @@ Reaching another obstacle (a spool of several very long polymers), she turns rig
 ........#.
 #.........
 ......#...
+#+end_src
 
 This process continues for a while, but the guard eventually leaves the mapped area (after walking past a tank of universal solvent):
 
+#+begin_src
 ....#.....
 .........#
 ..........
@@ -77,9 +86,11 @@ This process continues for a while, but the guard eventually leaves the mapped a
 ........#.
 #.........
 ......#v..
+#+end_src
 
 By predicting the guard's route, you can determine which specific positions in the lab will be in the patrol path. Including the guard's starting position, the positions visited by the guard before leaving the area are marked with an X:
 
+#+begin_src
 ....#.....
 ....XXXXX#
 ....X...X.
@@ -90,13 +101,15 @@ By predicting the guard's route, you can determine which specific positions in t
 .XXXXXXX#.
 #XXXXXXX..
 ......#X..
+#+end_src
 
 In this example, the guard will visit 41 distinct positions on your map.
 
 Predict the path of the guard. How many distinct positions will the guard visit before leaving the mapped area?
 
 Your puzzle answer was 4374.
---- Part Two ---
+
+** Part Two
 
 While The Historians begin working around the guard's patrol route, you borrow their fancy device and step outside the lab. From the safety of a supply closet, you time travel through the last few months and record the nightly status of the lab's guard post on the walls of the closet.
 
@@ -110,6 +123,7 @@ In the above example, there are only 6 different positions where a new obstructi
 
 Option one, put a printing press next to the guard's starting position:
 
+#+begin_src
 ....#.....
 ....+---+#
 ....|...|.
@@ -120,9 +134,11 @@ Option one, put a printing press next to the guard's starting position:
 ........#.
 #.........
 ......#...
+#+end_src
 
 Option two, put a stack of failed suit prototypes in the bottom right quadrant of the mapped area:
 
+#+begin_src
 ....#.....
 ....+---+#
 ....|...|.
@@ -133,9 +149,11 @@ Option two, put a stack of failed suit prototypes in the bottom right quadrant o
 ......O.#.
 #.........
 ......#...
+#+end_src
 
 Option three, put a crate of chimney-squeeze prototype fabric next to the standing desk in the bottom right quadrant:
 
+#+begin_src
 ....#.....
 ....+---+#
 ....|...|.
@@ -146,9 +164,11 @@ Option three, put a crate of chimney-squeeze prototype fabric next to the standi
 .+----+O#.
 #+----+...
 ......#...
+#+end_src
 
 Option four, put an alchemical retroencabulator near the bottom left corner:
 
+#+begin_src
 ....#.....
 ....+---+#
 ....|...|.
@@ -159,9 +179,11 @@ Option four, put an alchemical retroencabulator near the bottom left corner:
 ..|...|.#.
 #O+---+...
 ......#...
+#+end_src
 
 Option five, put the alchemical retroencabulator a bit to the right instead:
 
+#+begin_src
 ....#.....
 ....+---+#
 ....|...|.
@@ -172,9 +194,11 @@ Option five, put the alchemical retroencabulator a bit to the right instead:
 ....|.|.#.
 #..O+-+...
 ......#...
+#+end_src
 
 Option six, put a tank of sovereign glue right next to the tank of universal solvent:
 
+#+begin_src
 ....#.....
 ....+---+#
 ....|...|.
@@ -185,17 +209,10 @@ Option six, put a tank of sovereign glue right next to the tank of universal sol
 .+----++#.
 #+----++..
 ......#O..
+#+end_src
 
 It doesn't really matter what you choose to use as an obstacle so long as you and The Historians can put it into position without the guard noticing. The important thing is having enough options that you can find one that minimizes time paradoxes, and in this example, there are 6 different positions you could choose.
 
 You need to get the guard stuck in a loop by adding a single new obstruction. How many different positions could you choose for this obstruction?
 
 Your puzzle answer was 1705.
-
-Both parts of this puzzle are complete! They provide two gold stars: **
-
-At this point, you should return to your Advent calendar and try another puzzle.
-
-If you still want to see it, you can get your puzzle input.
-
-You can also [Shareon Mastodon] this puzzle.

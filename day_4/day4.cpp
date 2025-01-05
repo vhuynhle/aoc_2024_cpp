@@ -37,7 +37,7 @@ std::string get_forward_diagonal(const std::vector<std::string>& arr, std::size_
     const std::size_t m = arr.size();
     const std::size_t n = arr[0].size();
     const std::size_t start_r = (d < m) ? d : (m - 1);
-    const std::size_t end_r = std::max(std::size_t { 0 }, d - (n - 1));
+    const std::size_t end_r = (d < n) ? 0 : d - (n - 1);
 
     std::string res {};
     for (std::size_t r { start_r }; (r >= end_r) && (r <= start_r); --r) {
@@ -58,7 +58,7 @@ std::string get_backward_diagonal(const std::vector<std::string>& arr, size_t d)
 
     std::string res {};
     for (std::size_t c { start_c }; c <= end_c; ++c) {
-        const std::size_t r = c - ((n - 1) - d);
+        const std::size_t r = d + c - (n - 1);
         res.push_back(arr[r][c]);
     }
 
